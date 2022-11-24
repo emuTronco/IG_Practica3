@@ -1,22 +1,29 @@
 package com.example.practica3;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTreeCell;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class Ej2Controller implements Initializable {
+
+    private ObservableList<Producto> listaProductos = FXCollections.observableArrayList();
+    private ObservableList<String> listaCB = FXCollections.observableArrayList();
+    
     @FXML
     private TreeView treeView;
+
+    private String nuevoValor, antiguoValor;
 
     @FXML
     private ComboBox cb;
@@ -50,22 +57,51 @@ public class Ej2Controller implements Initializable {
         treeView.setRoot(rootItem);
         treeView.setShowRoot(false);
 
+        treeView.setOnEditCommit(new EventHandler<TreeView.EditEvent>() {
+            @Override
+            public void handle(TreeView.EditEvent editEvent) {
+                antiguoValor = editEvent.getOldValue().toString();
+                nuevoValor = editEvent.getNewValue().toString();
+                for (int i = 0; i < listaCB.size(); i++) {
+                    if (listaCB.get(i).equals(antiguoValor)){
+                        listaCB.set(i, nuevoValor);
+                        cb.setItems(listaCB);
+                    }
+                }
 
-        cb.setItems(FXCollections.observableArrayList("Monitor", "Tarjeta gráfica", "Disco duro SSD", "Refigeración líquida", "Fuente de alimentación", "Memoria RAM"));
+            }
+        });
+        
+        listaCB.addAll("Monitor", "Tarjeta gráfica", "Disco duro SSD", "Refigeración líquida", "Fuente de alimentación", "Memoria RAM");
+
+        cb.setItems(listaCB);
 
 
-        idCol.setCellValueFactory(new PropertyValueFactory<Producto,String>("id"));
-        descrCol.setCellValueFactory(new PropertyValueFactory<Producto,String>("descripcion"));
+        idCol.setCellValueFactory(new PropertyValueFactory<Producto, String>("id"));
+        descrCol.setCellValueFactory(new PropertyValueFactory<Producto, String>("descripcion"));
 
-        ObservableList<Producto> data = FXCollections.observableArrayList(
+        llenarTabla();
+
+    }
+
+    private void llenarTabla() {
+        listaProductos.addAll(
                 new Producto(1, "Monitor"),
                 new Producto(2, "Tarjeta gráfica"),
                 new Producto(3, "Disco duro SSD"),
                 new Producto(4, "Refrigeración líquida")
         );
 
-        tableProducto.setItems(data);
-
+        tableProducto.setItems(listaProductos);
     }
+
+    @FXML
+    public void onActionCB() {
+        String valor = cb.getValue().toString();
+        listaProductos.add(new Producto(listaProductos.size() + 1, valor));
+        tableProducto.setItems(listaProductos);
+    }
+
+
 
 }
